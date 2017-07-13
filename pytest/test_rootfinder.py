@@ -232,3 +232,29 @@ def testRoots_6(): # test when ideal is not zero-dimensional
 
     roots = rf.roots([f1, f2])
     assert(roots == -1)
+
+def testRoots_7(): # This test sometimes fails due to stability issues...
+    f1_coeff = np.zeros((3,3,3))
+    f1_coeff[(0,2,0)] = 1
+    f1_coeff[(1,1,0)] = -1
+    f1_coeff[(1,0,1)] = -2
+    f1 = MultiPower(f1_coeff)
+
+    f2_coeff = np.zeros((4,4,4))
+    f2_coeff[(0,3,0)] = 1
+    f2_coeff[(0,0,2)] = 1
+    f2_coeff[(0,0,0)] = 1
+    f2 = MultiPower(f2_coeff)
+
+    f3_coeff = np.zeros((3,3,3))
+    f3_coeff[(2,1,1)] = 1
+    f3_coeff[(0,1,1)] = -1
+    f3 = MultiPower(f3_coeff)
+
+    roots = rf.roots([f1, f2, f3])
+
+    values_at_roots = [[f1.evaluate_at(root) for root in roots],
+                   [f2.evaluate_at(root) for root in roots],
+                   [f3.evaluate_at(root) for root in roots]]
+
+    assert(np.all(np.isclose(values_at_roots, 0)))

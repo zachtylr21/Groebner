@@ -52,8 +52,7 @@ def roots(polys):
 
     # Get multiplication matrix
     VB, var_dict = vectorSpaceBasis(GB)
-    #print("VB:", VB)
-    #print("var_dict:", var_dict)
+    print("VB: ", VB)
     m_f = multMatrix(f, GB, VB)
 
     # Get list of indexes of single variables and store vars that were not
