@@ -13,38 +13,38 @@ import matplotlib.pyplot as plt
 global_accuracy = 1.e-10
 #If clean is true then at a couple of places (end of rrqr_reduce and end of add r to matrix) things close to 0 will be made 0.
 #Might make it more stable, might make it less stable. Not sure.
-clean = False  
+clean = False
 
 
 '''
- * They are currently saved into a dictionary called items that is passed in and out of most functions.* 
-    Args: 
+ * They are currently saved into a dictionary called items that is passed in and out of most functions.*
+    Args:
         polys (list): A list of polynomials that generate the ideal.
         old_polys (list): The polynomials that have already gone through the solve loop once. Starts as [].
-        new_polys (list): New polynomials that have never been throught the solve loop. All of them at first.
+        new_polys (list): New polynomials that have never been through the solve loop. All of them at first.
         np_matrix (numpy.ndarray): The full matrix of polynomials.
         term_set (set): The set of monomials in the matrix. Contains Terms.
         lead_term_set (set): The set of monomials that are lead terms of some polynomial in the matrix. Contains Terms.
-        
+
         These next three are used to determine what polynomials to keep after reduction.
         original_lms - The leading Terms of the original polynomials (not phi's or r's). Keep these as old_polys.
         original_lm_dict - A dictionary of the leading terms to their polynomials
         not_needed_lms - The leading terms that have another leading term that divided them. We won't keep these.
         duplicate_lms - The leading terms that occur multiple times. Keep these as old_polys
-    
+
 '''
 
 def solve(polys,qr_reduction = True):
     '''
     The main function. Initializes the matrix, adds the phi's and r's, and then reduces it. Repeats until the reduction
     no longer adds any more polynomials to the matrix. Print statements let us see the progress of the code.
-    
+
     Args:
         polys ():
     Keyword Args:
-        qr_reduction=True: 
+        qr_reduction=True:
     '''
-    # A dictionary that will keep track of variables (previously saved as attributes). 
+    # A dictionary that will keep track of variables (previously saved as attributes).
     items = {}
     # Check polynomial types
     if all([type(p) == MultiPower for p in polys]):
@@ -54,7 +54,7 @@ def solve(polys,qr_reduction = True):
     else:
         print([type(p) == MultiPower for p in polys])
         raise ValueError('Bad polynomials in list')
-    
+
     old_polys = []
     new_polys = polys
 
@@ -63,47 +63,47 @@ def solve(polys,qr_reduction = True):
     while polys_were_added:
         print("Starting Loop #"+str(i))
         print("Num Polys - ", len(new_polys + old_polys))
-        
-        # Initialize Everything. 
+
+        # Initialize Everything.
         print("Initializing")
         items = initialize_np_matrix(new_polys,old_polys,items)
         print(items['np_matrix'].shape)
-        
-        # Add Phi's to matrix. 
+
+        # Add Phi's to matrix.
         print("ADDING PHI's")
         items = add_phi_to_matrix(new_polys,old_polys,items)
         print(items['np_matrix'].shape)
-        
-        # Add r's to matrix. 
+
+        # Add r's to matrix.
         print("ADDING r's")
         items = add_r_to_matrix(new_polys,old_polys,items)
         print(items['np_matrix'].shape)
-        
-        # Reduce matrix. 
+
+        # Reduce matrix.
         polys_were_added,new_polys,old_polys = reduce_matrix(items,qr_reduction)
         i+=1
-        
+
     print("WE WIN")
     print("Basis - ")
     return reduce_groebner_basis(old_polys)
-        
+
 def initialize_np_matrix(new_polys,old_polys,items):
     '''
     Initialzes self.np_matrix to having just old_polys and new_polys in it
     matrix_terms is the header of the matrix, it lines up each column with a monomial
     '''
-    # Added new things into the dictionary of constantly changing variables. 
+    # Added new things into the dictionary of constantly changing variables.
     items.update({'np_matrix':np.array([]),'original_lms':set(),'original_lm_dict':{},
     'lead_term_set':set(),'term_set':set(),'matrix_terms':[],'duplicate_lms':set(),
     'not_needed_lms':set()})
-    
+
     for p in new_polys + old_polys:
         if p.lead_term != None:
             items['original_lms'].add(Term(p.lead_term))
             items['original_lm_dict'][Term(p.lead_term)] = p
 
     items = _add_poly_to_matrix(new_polys + old_polys,items)
-    
+
     return items
 
 
@@ -115,13 +115,13 @@ def _add_poly_to_matrix(p_list,items,adding_r = False):
 
     adding_r is only true when the r's are being added, this way it knows to keep adding new monomials to the heap
     for further r calculation
-    
-    returns the new lead_term_set 
+
+    returns the new lead_term_set
     '''
     for p in p_list:
-    
+
         items['lead_term_set'].add(Term(p.lead_term))
-        
+
         #Adds a new row of 0's if the matrix has any width
         if(items['np_matrix'].shape[0] != 0):
             zero_poly = np.zeros((1,items['np_matrix'].shape[1]))
@@ -202,7 +202,7 @@ def phi_criterion(i,j,B,phi,polys):
     '''
     if phi == False:
         return True
-        
+
     #Always add these?, they are helping to reduce our basis.
     #if all(polys[j].lead_term == self._lcm(polys[i],polys[j])) or all(polys[i].lead_term == self._lcm(polys[i],polys[j])) :
     #    return True
@@ -265,11 +265,11 @@ def add_r_to_matrix(new_polys,old_polys,items):
         if not r.lead_term==None:
             items = _add_poly_to_matrix([r],items,adding_r = True)
     items = sort_matrix(items)
-    
+
     if clean:
         items = clean_matrix(items)
-    
-    return items 
+
+    return items
 
 def _build_maxheap(items):
     '''
@@ -302,12 +302,12 @@ def sort_matrix(items):
     '''
     Sorts the matrix into degrevlex order.
     '''
-    
+
     argsort_list, items['matrix_terms']= argsort(items['matrix_terms'])
     items['np_matrix'] = items['np_matrix'][:,argsort_list]
-    
-    return items 
-    
+
+    return items
+
 def argsort(index_list):
     '''
     Returns an argsort list for the index, as well as sorts the list in place
@@ -317,7 +317,7 @@ def argsort(index_list):
     return argsort_list, index_list[::-1]
 
 def reduce_matrix(items,qr_reduction=True):
-    ''' 
+    '''
     Reduces the matrix fully using either QR or LU decomposition. Adds the new_poly's to old_poly's, and adds to
     new_poly's any polynomials created by the reduction that have new leading monomials.
     Returns-True if new polynomials were found, False otherwise.
@@ -391,7 +391,7 @@ def rrqr_reduce(matrix):
     Q,R,P = qr(A, pivoting = True) #rrqr reduce it
     PT = inverse_P(P)
     diagonals = np.diagonal(R) #Go along the diagonals to find the rank
-    rank = np.sum(np.abs(diagonals)>global_accuracy) 
+    rank = np.sum(np.abs(diagonals)>global_accuracy)
     if rank == height: #full rank, do qr on it
         Q,R = qr(A)
         A = R #qr reduce A
@@ -421,7 +421,7 @@ def rrqr_reduce(matrix):
         return reduced_matrix
     else:
         return clean_zeros_from_matrix(reduced_matrix)
-    
+
 def triangular_solve(matrix):
     " Reduces the upper block triangular matrix. "
     m,n = matrix.shape
@@ -471,11 +471,11 @@ def triangular_solve(matrix):
         #plt.matshow(~np.isclose(solver,0))
 
         return solver
-    
+
     # The case where the matrix passed in is a square matrix
     else:
             return np.eye(m)
-       
+
 def sm_to_poly(items,rows,reduced_matrix,power):
     '''
     Takes a list of indicies corresponding to the rows of the reduced matrix and
@@ -503,7 +503,7 @@ def sm_to_poly(items,rows,reduced_matrix,power):
         else:
             poly = MultiCheb(coeff)
             p_list.append(poly)
-    return p_list    
+    return p_list
 
 def reduce_groebner_basis(old_polys):
     '''
@@ -547,7 +547,7 @@ def clean_matrix(items):
     '''
     ##This would replace all small values in the matrix with 0.
     items['np_matrix'][np.where(abs(items['np_matrix']) < global_accuracy)]=0
-                   
+
     #Removes all 0 monomials
     non_zero_monomial = np.sum(abs(items['np_matrix']), axis=0)>0 ##Increasing this will get rid of small things.
     items['np_matrix'] = items['np_matrix'][:,non_zero_monomial] #only keeps the non_zero_monomials
@@ -562,7 +562,7 @@ def clean_matrix(items):
     #Removes all 0 polynomials
     non_zero_polynomial = np.sum(abs(items['np_matrix']),axis=1)>0 ##Increasing this will get rid of small things.
     items['np_matrix'] = items['np_matrix'][non_zero_polynomial,:] #Only keeps the non_zero_polymonials
-     
+
     return items
 
 def clean_zeros_from_matrix(matrix):
@@ -571,7 +571,7 @@ def clean_zeros_from_matrix(matrix):
     '''
     ##This would replace all small values in the matrix with 0.
     matrix[np.where(abs(matrix) < global_accuracy)]=0
-           
+
     return matrix
 
 
