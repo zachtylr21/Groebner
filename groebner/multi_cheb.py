@@ -3,6 +3,7 @@ from scipy.signal import fftconvolve, convolve
 import itertools
 from groebner.polynomial import Polynomial
 from numpy.polynomial import chebyshev as cheb
+import time
 
 '''
 08/31/17
@@ -12,6 +13,8 @@ coefficents, and inculdes basic operations (+,*,scalar multip, etc.)
 Assumes GRevLex ordering, but should be extended.
 '''
 
+times = dict()
+times["mon_mult_cheb"] = 0
 
 class MultiCheb(Polynomial):
     """
@@ -29,6 +32,12 @@ class MultiCheb(Polynomial):
         input- Current: list, current location in ordering
         output- the next step in ordering
     """
+    
+    def printTime():
+        print(times)
+    
+    def clearTime():
+        times["mon_mult_cheb"] = 0
 
     def __init__(self, coeff, order='degrevlex', lead_term=None, clean_zeros = True):
         super(MultiCheb, self).__init__(coeff, order, lead_term, clean_zeros)
@@ -170,6 +179,9 @@ class MultiCheb(Polynomial):
         x is the size of the solution matrix in the dimension being folded
         fold_idx is the index to fold around.
         """
+        if fold_idx == 0:
+            return solution_matrix
+
         sol = np.zeros_like(solution_matrix) #Matrix of zeroes used to insert the new values..
         slice_0 = slice(None, 1, None) # index to take first slice
         slice_1 = slice(fold_idx, fold_idx+1, None) # index to take slice that contains the axis folding around.
@@ -212,10 +224,14 @@ class MultiCheb(Polynomial):
         return sol
 
     def mon_mult(self, idx):
+        start = time.time()
         for i in range(len(idx)):
             idx_zeros = np.zeros(len(idx),dtype = int)
             idx_zeros[i] = idx[i]
             self = self.mon_mult1(idx_zeros)
+            self.coeff = self.coeff
+        end = time.time()
+        times["mon_mult_cheb"] += (end-start)
         return self
 
     def mon_mult1(self,idx):
@@ -226,10 +242,10 @@ class MultiCheb(Polynomial):
         #power = cheb2poly(self)
         #mult = power.mon_mult(idx)
         #return poly2cheb(mult)
-        
-        
-        
-        
+
+
+
+
         pad_values = list()
         for i in idx: #iterates through monomial and creates a tuple of pad values for each dimension
             pad_dim_i = (i,0)
@@ -258,6 +274,13 @@ class MultiCheb(Polynomial):
         p2 = MultiCheb(solution_matrix)
         Pf = (p1+p2)
         return MultiCheb(.5*Pf.coeff) #Make
+
+    def mon_mult(self, idx):
+        for i in range(len(idx)):
+            idx_zeros = np.zeros(len(idx),dtype = int)
+            idx_zeros[i] = idx[i]
+            self = self.mon_mult1(idx_zeros)
+        return self
 
     def evaluate_at(self, point):
         super(MultiCheb, self).evaluate_at(point)
