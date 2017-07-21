@@ -133,7 +133,7 @@ def _add_poly_to_matrix(p_list,items,adding_r = False):
             idx_term.val = tuple(map(lambda i: int(i), idx_term.val))
             coeff_val = p.coeff[idx_term.val]
 
-            # If already in idx_list
+            # If already in term_set
             if idx_term in items['term_set']:
                 # get index of label and np matrix to put into
                 idx_where = np.argmax([i.val == idx_term.val for i in items['matrix_terms']])
@@ -156,6 +156,7 @@ def _add_poly_to_matrix(p_list,items,adding_r = False):
                     items['np_matrix'] = np.hstack((items['np_matrix'], zeros))
                 items['matrix_terms'].append(idx_term)
                 items['np_matrix'][-1,-1] = coeff_val
+    print("np_matrix:\n", items['np_matrix'])
     return items
 
 def add_phi_to_matrix(new_polys,old_polys,items,phi = True):

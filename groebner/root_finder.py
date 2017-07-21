@@ -3,6 +3,7 @@ from groebner.multi_power import MultiPower
 from groebner.multi_cheb import MultiCheb
 import itertools
 from groebner.groebner_class import Groebner
+import groebner.groebner_basis as G
 
 '''
 This module contains the tools necessary to find the points of the variety of the
