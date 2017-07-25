@@ -56,6 +56,7 @@ def roots(polys, method = 'Groebner'):
     # Get multiplication matrix
     VB, var_dict = vectorSpaceBasis(GB)
     print("VB: ", VB)
+    print("VB dimension: ", len(VB))
     m_f = multMatrix(f, GB, VB)
 
     # Get list of indexes of single variables and store vars that were not

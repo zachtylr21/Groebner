@@ -166,7 +166,7 @@ def add_polys(degree, poly, poly_list):
     poly_list.append(poly)
     deg = degree - poly.degree
     dim = poly.dim
-    mons = mon_combos(np.zeros(dim),deg)
+    mons = mon_combos(np.zeros(dim, dtype=int),deg)
     mons = mons[1:]
     for i in mons:
         poly_list.append(poly.mon_mult(i))
